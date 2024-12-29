@@ -99,7 +99,7 @@ export function useStateUrl<T extends Encodable>(
   React.useEffect(() => {
     if (state === prevState) return;
     const newUrl = makeStateUrl({ state: { key: config.key, value: state } });
-    window.history.pushState({ path: newUrl }, "", newUrl);
+    window.history.replaceState({ path: newUrl }, "", newUrl);
   }, [state, prevState, config.key]);
 
   return [state, setState];
@@ -123,7 +123,7 @@ export function useReducerUrl<T extends EncodableRecord, P>(
         .filter((i) => state[i.key] !== prevState[i.key])
         .map((i) => ({ key: i.key, value: state[i.key] })),
     });
-    window.history.pushState({ path: newUrl }, "", newUrl);
+    window.history.replaceState({ path: newUrl }, "", newUrl);
   }, [config, prevState, state]);
 
   return [state, dispatch];
