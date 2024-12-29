@@ -3,7 +3,7 @@ import { Columns, PluginFactory, PluginResult, StringKey, TShape } from "../../c
 import { useTableStore } from "../../store/store";
 import { Direction, Result } from "./types";
 import { CacheManager } from "./cache-manager";
-import { useStateUrl } from "../../util/state-url/hooks";
+import { useStateUrl } from "../util/state-url/hooks";
 
 export function plugSort<T extends TShape>(fallback: {
   sort: StringKey<T>;
