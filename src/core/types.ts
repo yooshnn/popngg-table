@@ -9,11 +9,6 @@ export interface Column<T> {
   compareFn?: CompareFn<T>;
 }
 
-/** Collection of table column definitions */
-export type Columns<T extends TShape> = {
-  [id in keyof T]: Column<T[id]>;
-};
-
 // CORE
 
 /** Hook options */

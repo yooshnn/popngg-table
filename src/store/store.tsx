@@ -9,14 +9,8 @@ export const TableContext = React.createContext<StoreApi<TableState<any>>>(undef
 export function TableProvider<T extends TShape>({
   children,
   data,
-  columns,
 }: React.PropsWithChildren<TableProviderInitializer<T>>) {
-  const [store] = React.useState(() =>
-    createStore<TableState<T>>((/* set */) => ({
-      data,
-      columns,
-    }))
-  );
+  const [store] = React.useState(() => createStore<TableState<T>>((/* set */) => ({ data })));
 
   return <TableContext.Provider value={store}>{children}</TableContext.Provider>;
 }
