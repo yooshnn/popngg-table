@@ -1,21 +1,22 @@
 import React from "react";
-import { Columns, PluginFactory, PluginResult, StringKey, TShape } from "../../core/types";
-import { useTableStore } from "../../store/store";
-import { Direction, Result } from "./types";
+import { PluginFactory, StringKey, TShape } from "../../core/types";
+import { Direction, Config, Result } from "./types";
 import { CacheManager } from "./cache-manager";
 import { useStateUrl } from "../util/state-url/hooks";
 
-export function plugSort<T extends TShape>(fallback: {
-  sort: StringKey<T>;
-  direction: Direction;
-}): PluginFactory<T, Result<T>["state"], Result<T>["func"], Result<T>["misc"]> {
-  return (): PluginResult<T, Result<T>["state"], Result<T>["func"], Result<T>["misc"]> => {
-    const columns = useTableStore<T, Columns<T>>((state) => state.columns);
-    const [cache] = React.useState<CacheManager<T>>(new CacheManager());
+export function plugSort<T extends TShape>({
+  comparators,
+  fallback,
+}: Omit<Config<T>, "comparators"> & { comparators: Config<T>["comparators"] }): PluginFactory<T, Result<T>> {
+  return (): Result<T> => {
+    const [cache] = React.useState(new CacheManager<T, Config<T>["comparators"]>(comparators));
 
-    const [sort, setSort] = useStateUrl<StringKey<T>>({
+    const [sort, setSort] = useStateUrl<StringKey<Config<T>["comparators"]>>({
       key: "sort",
-      parser: (str) => (Object.prototype.hasOwnProperty.call(columns, str) ? (str as StringKey<T>) : undefined),
+      parser: (str) =>
+        Object.prototype.hasOwnProperty.call(comparators, str)
+          ? (str as StringKey<Config<T>["comparators"]>)
+          : undefined,
       fb: fallback.sort,
     });
 
@@ -26,21 +27,19 @@ export function plugSort<T extends TShape>(fallback: {
     });
 
     const transformer = React.useCallback<(_: T[]) => T[]>(
-      (data) => {
-        return cache.readCache(sort, direction, data, columns);
-      },
-      [cache, sort, direction, columns]
+      (data) => cache.readCache(sort, direction, data),
+      [cache, sort, direction]
     );
 
-    const state = { sort: sort, direction };
+    const state = React.useMemo(() => ({ sort, direction }), [sort, direction]);
 
     const func = React.useMemo(() => ({ setSort, setDirection }), [setDirection, setSort]);
 
     const misc = React.useMemo(
       () => ({
-        sortOptions: Object.keys(columns).filter((i) => columns[i].sortable) as StringKey<T>[],
+        sortOptions: Object.keys(comparators) as Array<StringKey<Config<T>["comparators"]>>,
       }),
-      [columns]
+      []
     );
 
     return {
