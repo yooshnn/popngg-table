@@ -6,7 +6,6 @@ export type TShape = Record<string, unknown>;
 /** Table column definition */
 export interface Column<T> {
   title: string;
-  sortable?: true;
   compareFn?: CompareFn<T>;
 }
 
@@ -58,12 +57,12 @@ type CompareFn<T> = (i: T, j: T) => number;
 // PLUGIN
 
 /** Plugin factory function */
-export type PluginFactory<
-  T extends TShape,
-  S extends PluginState = PluginState,
-  F extends PluginFunc = PluginFunc,
-  M extends PluginMisc = PluginMisc
-> = () => PluginResult<T, S, F, M>;
+export type PluginFactory<T extends TShape, R extends PluginResult<T> = PluginResult<T>> = () => PluginResult<
+  T,
+  R["state"],
+  R["func"],
+  R["misc"]
+>;
 
 /** A valid interface for a popngg table plugin. */
 export interface PluginResult<
