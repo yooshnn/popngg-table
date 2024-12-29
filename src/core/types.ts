@@ -3,12 +3,6 @@
 /** Table row (i.e. data) shape */
 export type TShape = Record<string, unknown>;
 
-/** Table column definition */
-export interface Column<T> {
-  title: string;
-  compareFn?: CompareFn<T>;
-}
-
 // CORE
 
 /** Hook options */
@@ -45,9 +39,6 @@ export type CombineMisc<T extends TShape, P extends readonly PluginFactory<T>[]>
 export type ExtractState<T extends TShape, P> = P extends PluginResult<T> ? NonNullable<P["state"]> : never;
 export type ExtractFunc<T extends TShape, P> = P extends PluginResult<T> ? NonNullable<P["func"]> : never;
 export type ExtractMisc<T extends TShape, P> = P extends PluginResult<T> ? NonNullable<P["misc"]> : never;
-
-/** Function to compare two values from the same column */
-type CompareFn<T> = (i: T, j: T) => number;
 
 // PLUGIN
 
