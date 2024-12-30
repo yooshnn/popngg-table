@@ -1,3 +1,7 @@
+export type Primitives = string | number | boolean | null;
+export type Encodable = Primitives | Array<Primitives>;
+export type EncodableRecord = Record<string, Encodable>;
+
 export type EncodableValue = string | number | Array<string> | Array<number>;
 export type EncodableState = Record<string, EncodableValue>;
 

@@ -1,10 +1,7 @@
-import React from "react";
-
 // null: 필드의 값을 비움 (e.g. 최대 팝클 = 제한 없음)
 // undefined: 정의할 수 없음 (e.g. parser fails)
 
-type Primitives = string | number | boolean | null;
-type Encodable = Primitives | Array<Primitives>;
+import { Encodable, EncodableRecord } from "./types";
 
 // UTILITY
 
@@ -18,13 +15,13 @@ const URLEncoder = (value: Encodable): string | null => {
   return null;
 };
 
-type StateUrlConfig<T extends Encodable> = {
+export type StateUrlConfig<T extends Encodable> = {
   key: string;
   parser: (fromUrl: string) => T | undefined;
   fb: T;
 };
 
-type ReducerUrlConfig<T extends EncodableRecord> = {
+export type ReducerUrlConfig<T extends EncodableRecord> = {
   [key in keyof T]: {
     key: string;
     parser: (fromUrl: string) => T[key] | undefined;
@@ -80,51 +77,32 @@ function parseReducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T>)
   }, {}) as T;
 }
 
-function usePrevState<T>(state: T, initialState: T) {
-  const ref = React.useRef(initialState);
-  React.useEffect(() => {
-    ref.current = state;
-  });
-  return ref.current;
+export type StateUrl<T extends Encodable> = {
+  value: T;
+  updateUrl: (oldState: T, newState: T) => void;
+};
+
+export function stateUrl<T extends Encodable>(config: StateUrlConfig<T>): StateUrl<T> {
+  return {
+    value: parseStateUrl(config),
+    updateUrl: (oldState: T, newState: T) => {
+      if (oldState === newState) return;
+      const newUrl = makeStateUrl({ state: { key: config.key, value: newState } });
+      window.history.replaceState({ path: newUrl }, "", newUrl);
+    },
+  };
 }
 
-export function useStateUrl<T extends Encodable>(
-  config: StateUrlConfig<T>
-): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const [init] = React.useState(parseStateUrl(config));
-
-  const [state, setState] = React.useState<T>(init);
-  const prevState = usePrevState<T>(state, init);
-
-  React.useEffect(() => {
-    if (state === prevState) return;
-    const newUrl = makeStateUrl({ state: { key: config.key, value: state } });
-    window.history.replaceState({ path: newUrl }, "", newUrl);
-  }, [state, prevState, config.key]);
-
-  return [state, setState];
-}
-
-type EncodableRecord = Record<string, Encodable>;
-
-export function useReducerUrl<T extends EncodableRecord, P>(
-  reducer: (state: T, payload: P) => T,
-  config: ReducerUrlConfig<T>
-): [T, React.Dispatch<P>] {
-  const [init] = React.useState(parseReducerUrl(config));
-
-  const [state, dispatch] = React.useReducer<React.Reducer<T, P>>(reducer, init);
-  const prevState = usePrevState<T>(state, init);
-
-  React.useEffect(() => {
-    if (state === prevState) return;
-    const newUrl = makeStateUrl({
-      states: Object.values(config)
-        .filter((i) => state[i.key] !== prevState[i.key])
-        .map((i) => ({ key: i.key, value: state[i.key] })),
-    });
-    window.history.replaceState({ path: newUrl }, "", newUrl);
-  }, [config, prevState, state]);
-
-  return [state, dispatch];
+export function reducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T>) {
+  return {
+    value: parseReducerUrl(config),
+    updateUrl: (oldState: T, newState: T) => {
+      const newUrl = makeStateUrl({
+        states: Object.values(config)
+          .filter((i) => oldState[i.key] !== newState[i.key])
+          .map((i) => ({ key: i.key, value: newState[i.key] })),
+      });
+      window.history.replaceState({ path: newUrl }, "", newUrl);
+    },
+  };
 }

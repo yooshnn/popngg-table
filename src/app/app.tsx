@@ -1,6 +1,6 @@
 import React from "react";
 import { useTable } from "../core/core";
-import { plugSort } from "../plugins/sort";
+import { PlugSort } from "../plugins/sort";
 import { TableProvider } from "../store/store";
 import { data } from "./data";
 
@@ -15,7 +15,7 @@ const columns = ["#", "TEAM", "POWER", "TYPES"];
 
 function Table() {
   const [plugins] = React.useState([
-    plugSort<MyShape>({
+    new PlugSort<MyShape>({
       comparators: {
         id: (a, b) => (a.id < b.id ? -1 : 1),
         power: (a, b) => (a.power < b.power ? -1 : 1),
@@ -24,20 +24,23 @@ function Table() {
           return a.id < b.id ? -1 : 1;
         },
       },
-      fallback: { sort: "test", direction: "asc" },
+      fallback: { sort: "id", direction: "asc" },
     }),
   ]);
 
-  const { table, state, func, misc } = useTable<MyShape, typeof plugins>({ plugins });
+  const { table, state, misc } = useTable<MyShape, typeof plugins>({ plugins });
+
+  const [sort, setSort] = state.sort;
+  const [direction, setDirection] = state.direction;
 
   const Sort = (
     <>
-      <select value={state.sort} onChange={(e) => func.setSort(e.target.value as keyof MyShape)}>
-        {misc.sortOptions.map((i) => (
+      <select value={sort} onChange={(e) => setSort(e.target.value)}>
+        {misc.options.map((i) => (
           <option key={i} value={i} label={i} />
         ))}
       </select>
-      <button onClick={() => func.setDirection(state.direction === "asc" ? "desc" : "asc")}>{state.direction}</button>
+      <button onClick={() => setDirection(direction === "asc" ? "desc" : "asc")}>{direction}</button>
     </>
   );
 
