@@ -1,5 +1,7 @@
 // TABLE SHAPE DEFINITIONS
 
+import { UnionToIntersection } from "../util/types";
+
 /** Table row (i.e. data) shape */
 export type TShape = Record<string, unknown>;
 
@@ -67,11 +69,3 @@ export type PluginFunc = Record<string, (...args: never[]) => unknown>;
 export type PluginMisc = Record<string, unknown>;
 
 export type Transformer<T extends TShape> = { priority?: number; fn: (data: T[]) => T[] };
-
-// UTIL
-
-export type UnionToIntersection<U> = (U extends unknown ? (k: U) => void : never) extends (k: infer I) => void
-  ? I
-  : never;
-
-export type StringKey<T> = Extract<keyof T, string>;

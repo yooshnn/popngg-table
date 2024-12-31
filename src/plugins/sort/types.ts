@@ -1,4 +1,5 @@
-import { StringKey, TShape } from "../../core/types";
+import { TShape } from "../../core/types";
+import { StringKey } from "../../util/types";
 
 export type Direction = "asc" | "desc";
 export type Comparators<T> = Record<string, (i: T, j: T) => number>;

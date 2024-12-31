@@ -1,3 +1,4 @@
+import { Entries } from "../../../util/types";
 import { Encodable, EncodableRecord, MakeStateUrlOption, ReducerUrlConfig, StateUrl, StateUrlConfig } from "./types";
 import { encodableEquals, URLEncoder } from "./utils";
 
@@ -60,10 +61,6 @@ function parseStateUrl<T extends Encodable>(config: StateUrlConfig<T>): T {
 function parseReducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T>): T {
   const url = new URL(window.location.toString());
   const searchParams = new URLSearchParams(url.search);
-
-  type Entries<T> = {
-    [K in keyof T]: [K, T[K]];
-  }[keyof T][];
 
   return (Object.entries(config) as Entries<ReducerUrlConfig<T>>).reduce((acc, [id, { key, parse, fb }]) => {
     const fromUrl = searchParams.get(key ?? String(id));
