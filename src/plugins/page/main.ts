@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Plugin, TShape } from "../../core/types";
-import { stateUrl } from "../util/state-url";
+import { stateUrl } from "../../util/state-url";
 import { Config } from "./types";
 
 export class PlugPage<T extends TShape> extends Plugin<T> {

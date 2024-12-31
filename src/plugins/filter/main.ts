@@ -1,5 +1,5 @@
 import { Plugin, TShape } from "../../core/types";
-import { reducerUrl } from "../util/state-url";
+import { reducerUrl } from "../../util/state-url";
 import { Config, MakeJudgeFn, Query } from "./types";
 
 export class PlugFilter<T extends TShape, Q extends Query> extends Plugin<T> {

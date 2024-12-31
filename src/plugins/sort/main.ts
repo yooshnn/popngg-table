@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { Plugin, TShape } from "../../core/types";
-import { stateUrl } from "../util/state-url";
+import { stateUrl } from "../../util/state-url";
 import { Config, Direction, Sort, Options } from "./types";
 
 export class PlugSort<T extends TShape> extends Plugin<T> {

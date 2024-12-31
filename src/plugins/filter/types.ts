@@ -1,5 +1,5 @@
 import { TShape } from "../../core/types";
-import { EncodableRecord, ReducerUrlConfig } from "../util/state-url";
+import { EncodableRecord, ReducerUrlConfig } from "../../util/state-url";
 
 export type JudgeFn<T extends TShape> = (row: T) => boolean;
 export type Query = EncodableRecord;
