@@ -48,6 +48,8 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
         res = fn(res);
       });
 
+      setLatestTf(Date.now());
+
       return res;
     },
     [cache, transformer]

@@ -1,12 +1,12 @@
 import { useTable } from "../core/core";
 import { useForm } from "react-hook-form";
-import { plugFilter, plugSort, Query, QuerySchema, Sample } from "./config";
+import { plugFilter, plugPage, plugSort, Query, QuerySchema, Sample } from "./config";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { data } from "./data";
 
 const columns = ["#", "TEAM", "POWER", "TYPES"];
 
-const plugins = [plugSort, plugFilter];
+const plugins = [plugSort, plugFilter, plugPage];
 
 function App() {
   const { table, state, misc } = useTable<Sample, typeof plugins>({ data, plugins });
@@ -26,16 +26,23 @@ function App() {
     defaultValues: query,
   });
 
+  // page
+  const [page, setPage] = state.page;
+  const [lastPage] = state.lastPage;
+
   const Sort = (
     <div className="sort">
-      <select className="sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
-        {misc.options.map((i) => (
-          <option key={i} value={i} label={i} />
-        ))}
-      </select>
-      <button className="sort-button" onClick={() => setDirection(direction === "asc" ? "desc" : "asc")}>
-        {direction}
-      </button>
+      <label className="sort-label">Sort</label>
+      <div className="sort-form">
+        <select className="sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
+          {misc.options.map((i) => (
+            <option key={i} value={i} label={i} />
+          ))}
+        </select>
+        <button className="sort-button" onClick={() => setDirection(direction === "asc" ? "desc" : "asc")}>
+          {direction}
+        </button>
+      </div>
     </div>
   );
 
@@ -65,6 +72,19 @@ function App() {
     </form>
   );
 
+  const Page = (
+    <div className="pagination">
+      <span className="pagination-info">
+        Page {page} of {lastPage}
+      </span>
+      <button className="pagination-button" onClick={() => setPage(page - 1)} disabled={page === 1}>
+        &lt;
+      </button>
+      <button className="pagination-button" onClick={() => setPage(page + 1)} disabled={page === lastPage}>
+        &gt;
+      </button>
+    </div>
+  );
   const Table = (
     <>
       <caption className="table-caption">Sample Table</caption>
@@ -97,6 +117,7 @@ function App() {
       <section className="sort-section">{Sort}</section>
       <section className="filter-section">{Filter}</section>
       <table className="table">{Table}</table>
+      <div>{Page}</div>
     </div>
   );
 }

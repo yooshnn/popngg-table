@@ -3,6 +3,7 @@ import { PlugFilter } from "../plugins/filter";
 import { PlugSort } from "../plugins/sort";
 import { ReducerUrlConfig } from "../plugins/util/state-url";
 import { parseOptionalArray } from "../plugins/util/state-url/utils";
+import { PlugPage } from "../plugins/page/main";
 
 // SCHEMA
 
@@ -30,17 +31,20 @@ const queryConfig: ReducerUrlConfig<Query> = {
   },
 };
 
+/** Define comparators */
+const comparators: PlugSort<Sample>["comparators"] = {
+  id: (a, b) => (a.id < b.id ? -1 : 1),
+  power: (a, b) => (a.power < b.power ? -1 : 1),
+  leader: (a, b) => {
+    if (a.team.leader !== b.team.leader) return a.team.leader < b.team.leader ? -1 : 1;
+    return a.id < b.id ? -1 : 1;
+  },
+};
+
 // PLUGIN
 
 export const plugSort = new PlugSort<Sample>({
-  comparators: {
-    id: (a, b) => (a.id < b.id ? -1 : 1),
-    power: (a, b) => (a.power < b.power ? -1 : 1),
-    leader: (a, b) => {
-      if (a.team.leader !== b.team.leader) return a.team.leader < b.team.leader ? -1 : 1;
-      return a.id < b.id ? -1 : 1;
-    },
-  },
+  comparators,
   fallback: { sort: "id", direction: "asc" },
 });
 
@@ -49,4 +53,8 @@ export const plugFilter = new PlugFilter<Sample, Query>({
     return (row) => (query.power[0] ?? 0) <= row.power && row.power <= (query.power[1] ?? Infinity);
   },
   queryConfig,
+});
+
+export const plugPage = new PlugPage<Sample>({
+  rowsPerPage: 10,
 });

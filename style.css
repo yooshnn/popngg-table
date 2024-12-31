@@ -9,8 +9,18 @@
 /* Sort 섹션 */
 .sort {
   display: flex;
-  gap: 1rem;
+  flex-direction: column;
   margin-bottom: 1.5rem;
+}
+
+.sort-label {
+  font-weight: bold;
+  margin-bottom: 0.4rem;
+}
+
+.sort-form {
+  display: flex;
+  gap: 0.5rem;
 }
 
 .sort-select {
@@ -111,4 +121,44 @@
 .table-cell {
   padding: 0.5rem;
   border: 1px solid #ddd;
+}
+
+.pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin: 1rem 0;
+}
+
+.pagination-button {
+  padding: 0.5rem 1rem;
+  border: 1px solid #ccc;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.pagination-button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+.pagination-info {
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.rows-per-page {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rows-per-page-select {
+  padding: 0.3rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 1rem;
 }
