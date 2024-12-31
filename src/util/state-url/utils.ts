@@ -9,7 +9,7 @@ export function URLEncoder(value: Encodable): string | null {
 
   if (type === "string") return encodeURIComponent(value as string);
   if (type === "number" || type === "boolean") return `${value}`;
-  if (Array.isArray(value)) return value.map((i) => URLEncoder(i)).toString();
+  if (Array.isArray(value)) return value.map(URLEncoder).toString();
   return null;
 }
 

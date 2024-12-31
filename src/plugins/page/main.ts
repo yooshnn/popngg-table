@@ -45,7 +45,9 @@ export class PlugPage<T extends TShape> extends Plugin<T> {
     };
 
     this.lastPage = 0;
-    this.setLastPage = (newLastPage) => (this.lastPage = newLastPage);
+    this.setLastPage = (newLastPage) => {
+      this.lastPage = newLastPage;
+    };
 
     this.rowsPerPage = rowsPerPage;
   }

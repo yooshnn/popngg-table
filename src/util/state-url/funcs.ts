@@ -1,4 +1,4 @@
-import { Entries } from "../../../util/types";
+import { Entries } from "../types";
 import { Encodable, EncodableRecord, MakeStateUrlOption, ReducerUrlConfig, StateUrl, StateUrlConfig } from "./types";
 import { encodableEquals, URLEncoder } from "./utils";
 
@@ -40,7 +40,7 @@ function makeStateUrl({ state, states }: MakeStateUrlOption) {
   };
 
   if (state) register(state);
-  if (states) states.forEach((state) => register(state));
+  if (states) states.forEach((i) => register(i));
 
   return `${url.origin}${url.pathname}?${searchParams.toString()}`;
 }
