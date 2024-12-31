@@ -1,4 +1,5 @@
 import { Encodable, EncodableRecord, MakeStateUrlOption, ReducerUrlConfig, StateUrl, StateUrlConfig } from "./types";
+import { encodableEquals, URLEncoder } from "./utils";
 
 // Main functions to use
 
@@ -18,7 +19,7 @@ export function reducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T
     value: parseReducerUrl(config),
     updateUrl: (oldState: T, newState: T) => {
       const states = Object.entries(config)
-        .filter(([key, i]) => oldState[i.key ?? key] !== newState[i.key ?? key])
+        .filter(([key, i]) => !encodableEquals(oldState[i.key ?? key], newState[i.key ?? key]))
         .map(([key, i]) => ({ key: i.key ?? key, value: newState[i.key ?? key] }));
       const newUrl = makeStateUrl({ states });
       window.history.replaceState({ path: newUrl }, "", newUrl);
@@ -27,15 +28,6 @@ export function reducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T
 }
 
 // Utility
-
-function URLEncoder(value: Encodable): string | null {
-  const type = typeof value;
-
-  if (type === "string") return encodeURIComponent(value as string);
-  if (type === "number" || type === "boolean") return `${value}`;
-  if (Array.isArray(value)) return value.map((i) => URLEncoder(i)).toString();
-  return null;
-}
 
 function makeStateUrl({ state, states }: MakeStateUrlOption) {
   const url = new URL(window.location.toString());
