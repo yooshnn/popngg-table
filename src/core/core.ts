@@ -12,7 +12,6 @@ import {
   PluginState,
   CombinePlugin,
 } from "./types";
-import { useTableStore } from "../store/store";
 import { Cache } from "./cache";
 
 // Main hook
@@ -21,8 +20,8 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
   // List of provided plugins.
   const plugins = React.useMemo(() => (option.plugins ?? []) as readonly [...P], [option.plugins]);
 
-  const data = useTableStore<T, T[]>((state) => state.data);
-  const [cache] = React.useState(new Cache(data));
+  const data = option.data;
+  const cache = React.useMemo(() => new Cache(data), [data]);
   const [latestTf, setLatestTf] = React.useState<number | null>(null);
 
   // Transformer
@@ -75,7 +74,8 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
       (acc, plugin) => ({ ...acc, ...wrapPluginState<T, P>(plugin.exports.state, tf) }),
       {} as CombineState<T, P>
     );
-  }, [plugins, tf]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [plugins, tf, latestTf]);
 
   // Func & Misc
 

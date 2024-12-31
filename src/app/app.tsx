@@ -1,16 +1,15 @@
 import { useTable } from "../core/core";
-import { TableProvider } from "../store/store";
-import { data } from "./data";
 import { useForm } from "react-hook-form";
 import { plugFilter, plugSort, Query, QuerySchema, Sample } from "./config";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { data } from "./data";
 
 const columns = ["#", "TEAM", "POWER", "TYPES"];
 
 const plugins = [plugSort, plugFilter];
 
-function Table() {
-  const { table, state, misc } = useTable<Sample, typeof plugins>({ plugins });
+function App() {
+  const { table, state, misc } = useTable<Sample, typeof plugins>({ data, plugins });
 
   // sort
   const [sort, setSort] = state.sort;
@@ -99,14 +98,6 @@ function Table() {
       <section className="filter-section">{Filter}</section>
       <table className="table">{Table}</table>
     </div>
-  );
-}
-
-function App() {
-  return (
-    <TableProvider<Sample> data={data}>
-      <Table />
-    </TableProvider>
   );
 }
 

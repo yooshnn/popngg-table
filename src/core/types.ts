@@ -7,6 +7,7 @@ export type TShape = Record<string, unknown>;
 
 /** Hook options */
 export interface HookOption<T extends TShape, Plugins extends readonly Plugin<T>[]> {
+  data: T[];
   plugins?: readonly [...Plugins];
 }
 
