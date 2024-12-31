@@ -28,51 +28,65 @@ function Table() {
   });
 
   const Sort = (
-    <>
-      <select value={sort} onChange={(e) => setSort(e.target.value)}>
+    <div className="sort">
+      <select className="sort-select" value={sort} onChange={(e) => setSort(e.target.value)}>
         {misc.options.map((i) => (
           <option key={i} value={i} label={i} />
         ))}
       </select>
-      <button onClick={() => setDirection(direction === "asc" ? "desc" : "asc")}>{direction}</button>
-    </>
+      <button className="sort-button" onClick={() => setDirection(direction === "asc" ? "desc" : "asc")}>
+        {direction}
+      </button>
+    </div>
   );
 
   const Filter = (
-    <form onSubmit={handleSubmit(setQuery)}>
-      <div>
-        <label>Min Power</label>
-        <input type="string" {...register("power.0", { setValueAs: (v) => (v === "" ? undefined : parseInt(v)) })} />
-        {errors.power?.[0] && <p>{errors.power[0]?.message}</p>}
+    <form className="filter-form" onSubmit={handleSubmit(setQuery)}>
+      <div className="filter-group">
+        <label className="filter-label">Min Power</label>
+        <input
+          className="filter-input"
+          type="string"
+          {...register("power.0", { setValueAs: (v) => (v === "" ? undefined : parseInt(v)) })}
+        />
+        {errors.power?.[0] && <p className="filter-error">{errors.power[0]?.message}</p>}
       </div>
-      <div>
-        <label>Max Power</label>
-        <input type="string" {...register("power.1", { setValueAs: (v) => (v === "" ? undefined : parseInt(v)) })} />
-        {errors.power?.[1] && <p>{errors.power[1]?.message}</p>}
+      <div className="filter-group">
+        <label className="filter-label">Max Power</label>
+        <input
+          className="filter-input"
+          type="string"
+          {...register("power.1", { setValueAs: (v) => (v === "" ? undefined : parseInt(v)) })}
+        />
+        {errors.power?.[1] && <p className="filter-error">{errors.power[1]?.message}</p>}
       </div>
-      <button type="submit">Submit</button>
+      <button className="filter-submit" type="submit">
+        Submit
+      </button>
     </form>
   );
 
   const Table = (
     <>
-      <caption>sample table</caption>
-      <thead>
+      <caption className="table-caption">Sample Table</caption>
+      <thead className="table-head">
         <tr>
           {Object.values(columns).map((i) => (
-            <th key={i}>{i}</th>
+            <th key={i} className="table-header">
+              {i}
+            </th>
           ))}
         </tr>
       </thead>
-      <tbody>
+      <tbody className="table-body">
         {table.slice(0, 50).map((row) => (
-          <tr key={row.id}>
-            <td>{row.id}</td>
-            <td>
+          <tr key={row.id} className="table-row">
+            <td className="table-cell">{row.id}</td>
+            <td className="table-cell">
               {row.team.leader} &amp; {row.team.teammate}
             </td>
-            <td>{row.power}</td>
-            <td>{row.types.join(", ")}</td>
+            <td className="table-cell">{row.power}</td>
+            <td className="table-cell">{row.types.join(", ")}</td>
           </tr>
         ))}
       </tbody>
@@ -80,10 +94,10 @@ function Table() {
   );
 
   return (
-    <div>
-      <section>{Sort}</section>
-      <section>{Filter}</section>
-      <table>{Table}</table>
+    <div className="container">
+      <section className="sort-section">{Sort}</section>
+      <section className="filter-section">{Filter}</section>
+      <table className="table">{Table}</table>
     </div>
   );
 }

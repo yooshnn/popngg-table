@@ -1,44 +1,114 @@
-div {
+/* 전체 레이아웃 */
+.container {
+  max-width: 800px;
+  margin: 0 auto;
   padding: 20px;
+  font-family: Arial, sans-serif;
 }
 
-table {
+/* Sort 섹션 */
+.sort {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.sort-select {
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.sort-button {
+  padding: 0.4rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1rem;
+}
+
+.sort-button:hover {
+  background-color: #0056b3;
+}
+
+/* Filter 섹션 */
+.filter-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-label {
+  font-weight: bold;
+  margin-bottom: 0.4rem;
+}
+
+.filter-input {
+  padding: 0.4rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.filter-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.filter-error {
+  color: red;
+  font-size: 0.8rem;
+  margin-top: 0.2rem;
+}
+
+.filter-submit {
+  padding: 0.5rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.filter-submit:hover {
+  background-color: #0056b3;
+}
+
+/* Table 섹션 */
+.table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
-  background-color: #ffffff;
-  border: 1px solid #ddd;
-  text-align: left;
+  margin-top: 1.5rem;
 }
 
-caption {
-  margin-bottom: 10px;
-  font-size: 1.2rem;
+.table-caption {
   font-weight: bold;
-  color: #333;
   text-align: left;
+  margin-bottom: 0.5rem;
 }
 
-th {
-  background-color: #007acc;
-  color: white;
-  padding: 8px 12px;
-  font-size: 1rem;
-  text-transform: uppercase;
+.table-head {
+  background-color: #f1f1f1;
+}
+
+.table-header {
+  text-align: left;
+  padding: 0.5rem;
   border: 1px solid #ddd;
 }
 
-td {
-  padding: 8px 12px;
+.table-body .table-row:nth-child(even) {
+  background-color: #f9f9f9;
+}
+
+.table-cell {
+  padding: 0.5rem;
   border: 1px solid #ddd;
-  font-size: 0.9rem;
-  color: #333;
-}
-
-tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-tr:hover {
-  background-color: #d9ebf9;
 }
