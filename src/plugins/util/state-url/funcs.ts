@@ -1,39 +1,43 @@
-// null: 필드의 값을 비움 (e.g. 최대 팝클 = 제한 없음)
-// undefined: 정의할 수 없음 (e.g. parser fails)
+import { Encodable, EncodableRecord, MakeStateUrlOption, ReducerUrlConfig, StateUrl, StateUrlConfig } from "./types";
 
-import { Encodable, EncodableRecord } from "./types";
+// Main functions to use
 
-// UTILITY
+export function stateUrl<T extends Encodable>(config: StateUrlConfig<T>): StateUrl<T> {
+  return {
+    value: parseStateUrl(config),
+    updateUrl: (oldState: T, newState: T) => {
+      if (oldState === newState) return;
+      const newUrl = makeStateUrl({ state: { key: config.key, value: newState } });
+      window.history.replaceState({ path: newUrl }, "", newUrl);
+    },
+  };
+}
 
-/** Encode state for URL. */
-const URLEncoder = (value: Encodable): string | null => {
+export function reducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T>) {
+  return {
+    value: parseReducerUrl(config),
+    updateUrl: (oldState: T, newState: T) => {
+      const states = Object.entries(config)
+        .filter(([key, i]) => oldState[i.key ?? key] !== newState[i.key ?? key])
+        .map(([key, i]) => ({ key: i.key ?? key, value: newState[i.key ?? key] }));
+      const newUrl = makeStateUrl({ states });
+      window.history.replaceState({ path: newUrl }, "", newUrl);
+    },
+  };
+}
+
+// Utility
+
+function URLEncoder(value: Encodable): string | null {
   const type = typeof value;
 
   if (type === "string") return encodeURIComponent(value as string);
   if (type === "number" || type === "boolean") return `${value}`;
   if (Array.isArray(value)) return value.map((i) => URLEncoder(i)).toString();
   return null;
-};
+}
 
-export type StateUrlConfig<T extends Encodable> = {
-  key: string;
-  parser: (fromUrl: string) => T | undefined;
-  fb: T;
-};
-
-export type ReducerUrlConfig<T extends EncodableRecord> = {
-  [key in keyof T]: {
-    key: string;
-    parser: (fromUrl: string) => T[key] | undefined;
-    fb: T[key];
-  };
-};
-
-type MakeStateUrlOption =
-  | { state: { key: string; value: Encodable }; states?: undefined }
-  | { state?: undefined; states: { key: string; value: Encodable }[] };
-
-export function makeStateUrl({ state, states }: MakeStateUrlOption) {
+function makeStateUrl({ state, states }: MakeStateUrlOption) {
   const url = new URL(window.location.toString());
   const searchParams = new URLSearchParams(url.search);
 
@@ -52,57 +56,29 @@ function parseStateUrl<T extends Encodable>(config: StateUrlConfig<T>): T {
   const url = new URL(window.location.toString());
   const searchParams = new URLSearchParams(url.search);
 
-  const { key, parser, fb } = config;
+  const { key, parse, fb } = config;
 
-  const fromUrl = searchParams.get(key);
-  const parsed = fromUrl ? parser(fromUrl) : undefined;
-  const safe = typeof parsed === "undefined" ? fb : parsed;
-
-  return safe;
+  try {
+    return parse(searchParams.get(key));
+  } catch {
+    return fb;
+  }
 }
 
 function parseReducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T>): T {
   const url = new URL(window.location.toString());
   const searchParams = new URLSearchParams(url.search);
 
-  return Object.entries(config).reduce((acc, [id, { key, parser, fb }]) => {
-    const fromUrl = searchParams.get(key);
-    const parsed = fromUrl ? parser(fromUrl) : undefined;
-    const safe = typeof parsed === "undefined" ? fb : parsed;
+  type Entries<T> = {
+    [K in keyof T]: [K, T[K]];
+  }[keyof T][];
 
-    return {
-      ...acc,
-      [id]: safe,
-    };
-  }, {}) as T;
-}
-
-export type StateUrl<T extends Encodable> = {
-  value: T;
-  updateUrl: (oldState: T, newState: T) => void;
-};
-
-export function stateUrl<T extends Encodable>(config: StateUrlConfig<T>): StateUrl<T> {
-  return {
-    value: parseStateUrl(config),
-    updateUrl: (oldState: T, newState: T) => {
-      if (oldState === newState) return;
-      const newUrl = makeStateUrl({ state: { key: config.key, value: newState } });
-      window.history.replaceState({ path: newUrl }, "", newUrl);
-    },
-  };
-}
-
-export function reducerUrl<T extends EncodableRecord>(config: ReducerUrlConfig<T>) {
-  return {
-    value: parseReducerUrl(config),
-    updateUrl: (oldState: T, newState: T) => {
-      const newUrl = makeStateUrl({
-        states: Object.values(config)
-          .filter((i) => oldState[i.key] !== newState[i.key])
-          .map((i) => ({ key: i.key, value: newState[i.key] })),
-      });
-      window.history.replaceState({ path: newUrl }, "", newUrl);
-    },
-  };
+  return (Object.entries(config) as Entries<ReducerUrlConfig<T>>).reduce((acc, [id, { key, parse, fb }]) => {
+    const fromUrl = searchParams.get(key ?? String(id));
+    try {
+      return { ...acc, [id]: parse(fromUrl) };
+    } catch {
+      return { ...acc, [id]: fb };
+    }
+  }, {} as T);
 }

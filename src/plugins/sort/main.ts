@@ -1,3 +1,4 @@
+import { z } from "zod";
 import { Plugin, TShape } from "../../core/types";
 import { stateUrl } from "../util/state-url";
 import { Config, Direction, Sort, Options } from "./types";
@@ -30,13 +31,13 @@ export class PlugSort<T extends TShape> extends Plugin<T> {
 
     const sort = stateUrl<Sort<T>>({
       key: "sort",
-      parser: (str) => (Object.prototype.hasOwnProperty.call(comparators, str) ? (str as Sort<T>) : undefined),
+      parse: z.enum(Object.keys(comparators) as [keyof typeof comparators]).parse,
       fb: fallback.sort,
     });
 
     const direction = stateUrl({
       key: "direction",
-      parser: (str) => (str === "asc" || str === "desc" ? str : undefined),
+      parse: z.union([z.literal("asc"), z.literal("desc")]).parse,
       fb: fallback.direction,
     });
 

@@ -75,8 +75,7 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
       (acc, plugin) => ({ ...acc, ...wrapPluginState<T, P>(plugin.exports.state, tf) }),
       {} as CombineState<T, P>
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [plugins, tf, latestTf]);
+  }, [plugins, tf]);
 
   // Func & Misc
 
