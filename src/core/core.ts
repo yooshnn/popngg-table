@@ -84,7 +84,8 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
 
   // Table
 
-  const [table, setTable] = React.useState<T[]>(calcTfResult());
+  const initialResult = React.useMemo(() => calcTfResult(), [calcTfResult]);
+  const [table, setTable] = React.useState<T[]>(initialResult);
 
   // Return
 
