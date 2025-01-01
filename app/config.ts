@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { PlugFilter, PlugSort, PlugPage } from "../plugins";
-import { ReducerUrlConfig, parseOptionalArray } from "../util/state-url";
+import { PlugFilter, PlugSort, PlugPage } from "../src/plugins";
+import { ReducerUrlConfig, parseOptionalArray } from "../src/util/state-url";
 
 // SCHEMA
 

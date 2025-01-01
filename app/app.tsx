@@ -1,4 +1,6 @@
-import { useTable } from "../core/core";
+import React from "react";
+
+import { useTable } from "../src";
 import { useForm } from "react-hook-form";
 import { plugFilter, plugPage, plugSort, Query, QuerySchema, Sample } from "./config";
 import { zodResolver } from "@hookform/resolvers/zod";
