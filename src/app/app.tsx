@@ -9,14 +9,14 @@ const columns = ["#", "TEAM", "POWER", "TYPES"];
 const plugins = [plugSort, plugFilter, plugPage];
 
 function App() {
-  const { table, state, misc } = useTable<Sample, typeof plugins>({ data, plugins });
+  const { table, state, dispatch, misc } = useTable<Sample, typeof plugins>({ data, plugins });
 
   // sort
-  const [sort, setSort] = state.sort;
-  const [direction, setDirection] = state.direction;
+  const [sort, setSort] = [state.sort, dispatch.setSort];
+  const [direction, setDirection] = [state.direction, dispatch.setDirection];
 
   // filter
-  const [query, setQuery] = state.query;
+  const [query, setQuery] = [state.query, dispatch.setQuery];
   const {
     register,
     handleSubmit,
@@ -27,8 +27,8 @@ function App() {
   });
 
   // page
-  const [page, setPage] = state.page;
-  const [lastPage] = state.lastPage;
+  const [page, setPage] = [state.page, dispatch.setPage];
+  const lastPage = state.lastPage;
 
   const Sort = (
     <div className="sort">

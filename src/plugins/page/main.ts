@@ -58,10 +58,12 @@ export class PlugPage<T extends TShape> extends Plugin<T> {
         tfPage: this.tfPage,
       },
       state: {
-        page: [this.page, this.setPage, "tfPage"] as const,
-        lastPage: [this.lastPage, this.setLastPage] as const,
+        page: this.page,
+        lastPage: this.lastPage,
       },
-      func: {},
+      dispatch: {
+        setPage: [this.setPage, "tfPage"] as const,
+      },
       misc: {
         rowsPerPage: this.rowsPerPage,
       },

@@ -38,9 +38,11 @@ export class PlugFilter<T extends TShape, Q extends Query> extends Plugin<T> {
         tfFilter: this.tfFilter,
       },
       state: {
-        query: [this.query, this.setQuery, "tfFilter"] as const,
+        query: this.query,
       },
-      func: {},
+      dispatch: {
+        setQuery: [this.setQuery, "tfFilter"] as const,
+      },
       misc: {},
     };
   }

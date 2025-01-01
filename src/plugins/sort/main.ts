@@ -64,10 +64,13 @@ export class PlugSort<T extends TShape> extends Plugin<T> {
         tfSort: this.tfSort,
       },
       state: {
-        sort: [this.sort, this.setSort, "tfSort"] as const,
-        direction: [this.direction, this.setDirection, "tfSort"] as const,
+        sort: this.sort,
+        direction: this.direction,
       },
-      func: {},
+      dispatch: {
+        setSort: [this.setSort, "tfSort"] as const,
+        setDirection: [this.setDirection, "tfSort"] as const,
+      },
       misc: {
         options: this.options,
       },

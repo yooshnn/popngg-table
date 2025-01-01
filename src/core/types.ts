@@ -8,64 +8,70 @@ export type TShape = Record<string, unknown>;
 // CORE
 
 /** Hook options */
-export interface HookOption<T extends TShape, Plugins extends readonly Plugin<T>[]> {
+export interface CoreOption<T extends TShape, Plugins extends readonly Plugin<T>[]> {
   data: T[];
   plugins?: readonly [...Plugins];
 }
 
 /** Hook returns */
-export interface HookReturn<T extends TShape, P extends readonly Plugin<T>[]> {
+export interface CoreReturn<T extends TShape, P extends readonly Plugin<T>[]> {
   table: T[];
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  tf: (key: keyof CombineTransformer<T, P>, cb?: (...args: any[]) => any, ...rest: any[]) => void;
-  state: CombineState<T, P>;
-  func: CombineFunc<T, P>;
-  misc: CombineMisc<T, P>;
+  tf: (key: keyof Transformer<T, P>) => void;
+  state: State<T, P>;
+  dispatch: Dispatch<T, P>;
+  misc: Misc<T, P>;
 }
 
-export interface CombinePlugin<T extends TShape, P extends readonly Plugin<T>[]> {
-  transformer: CombineTransformer<T, P>;
-  state: CombineState<T, P>;
-  func: CombineFunc<T, P>;
-  misc: CombineMisc<T, P>;
+export interface CombinedPlugins<T extends TShape, P extends readonly Plugin<T>[]> {
+  transformer: Transformer<T, P>;
+  state: State<T, P>;
+  dispatch: Dispatch<T, P>;
+  misc: Misc<T, P>;
 }
 
-/** Combine data */
-export type CombineTransformer<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, Transformer<T>> &
-  UnionToIntersection<
-    { [Index in keyof P]: P[Index] extends Plugin<T> ? ExtractTransformer<T, P[Index]> : never }[number]
-  >;
-export type CombineState<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, [unknown, () => void]> &
+/** Data the core combines */
+export type Transformer<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, PluginTransformer<T>> &
+  UnionToIntersection<{ [Index in keyof P]: ExtractTransformer<T, P[Index]> }[number]>;
+export type State<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, PluginState> &
   UnionToIntersection<{ [Index in keyof P]: P[Index] extends Plugin<T> ? ExtractState<T, P[Index]> : never }[number]>;
-export type CombineFunc<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, unknown> &
-  UnionToIntersection<{ [Index in keyof P]: P[Index] extends Plugin<T> ? ExtractFunc<T, P[Index]> : never }[number]>;
-export type CombineMisc<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, unknown> &
-  UnionToIntersection<{ [Index in keyof P]: P[Index] extends Plugin<T> ? ExtractMisc<T, P[Index]> : never }[number]>;
+export type Dispatch<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, unknown> &
+  UnionToIntersection<{ [Index in keyof P]: ExtractDispatch<T, P[Index]> }[number]>;
+export type Misc<T extends TShape, P extends readonly Plugin<T>[]> = Record<string, PluginMisc> &
+  UnionToIntersection<{ [Index in keyof P]: ExtractMisc<T, P[Index]> }[number]>;
 
-/** Extract expose */
+/** Utilities to extract each field from plugin exports */
 export type ExtractTransformer<T extends TShape, P> = P extends Plugin<T>
   ? NonNullable<P["exports"]["transformer"]>
   : never;
-export type ExtractState<T extends TShape, P> = P extends Plugin<T> ? NonNullable<P["exports"]["state"]> : never;
-export type ExtractFunc<T extends TShape, P> = P extends Plugin<T> ? NonNullable<P["exports"]["func"]> : never;
 export type ExtractMisc<T extends TShape, P> = P extends Plugin<T> ? NonNullable<P["exports"]["misc"]> : never;
+export type ExtractState<T extends TShape, P> = P extends Plugin<T> ? NonNullable<P["exports"]["state"]> : never;
+export type ExtractDispatch<T extends TShape, P> = P extends Plugin<T>
+  ? NonNullable<{
+      [K in keyof P["exports"]["dispatch"]]: P["exports"]["dispatch"][K][0];
+    }>
+  : never;
 
 // PLUGIN
 
 /** A valid interface for a popngg table plugin. */
 export abstract class Plugin<T extends TShape> {
   public abstract get exports(): {
-    transformer: PluginTransformer<T>;
-    state: PluginState;
-    func: PluginFunc;
-    misc: PluginMisc;
+    transformer: PluginTransformers<T>;
+    state: PluginStates;
+    dispatch: PluginDispatches;
+    misc: PluginMiscs;
   };
 }
 
 /** Transformers are prioritized by their id. */
-export type PluginTransformer<T extends TShape> = Record<string, Transformer<T>>;
-export type PluginState = Record<string, readonly [unknown, (arg: never) => void, string?]>;
-export type PluginFunc = Record<string, (...args: never[]) => unknown>;
-export type PluginMisc = Record<string, unknown>;
+export type PluginTransformers<T extends TShape> = Record<string, PluginTransformer<T>>;
+export type PluginStates = Record<string, unknown>;
+export type PluginDispatches = Record<string, PluginDispatch>;
+export type PluginMiscs = Record<string, unknown>;
 
-export type Transformer<T extends TShape> = { priority?: number; fn: (data: T[]) => T[] };
+export type PluginTransformer<T extends TShape> = { priority?: number; fn: (data: T[]) => T[] };
+export type PluginState = unknown;
+export type PluginDispatch = readonly [PluginDispatchFunction, string?];
+export type PluginMisc = unknown;
+
+export type PluginDispatchFunction = (...args: never[]) => unknown;

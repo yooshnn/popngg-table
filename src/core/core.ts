@@ -1,22 +1,24 @@
 import React from "react";
 import {
+  CoreReturn,
+  CoreOption,
   Plugin,
-  HookOption,
-  HookReturn,
   TShape,
-  CombineState,
-  CombineFunc,
-  CombineMisc,
-  CombineTransformer,
   Transformer,
-  PluginState,
-  CombinePlugin,
+  CombinedPlugins,
+  Dispatch,
+  PluginDispatches,
+  PluginDispatch,
+  PluginDispatchFunction,
+  PluginTransformer,
+  Misc,
+  State,
 } from "./types";
 import { Cache } from "./cache";
 
 // Main hook
 
-export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(option: HookOption<T, P>): HookReturn<T, P> {
+export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(option: CoreOption<T, P>): CoreReturn<T, P> {
   // List of provided plugins.
   const plugins = React.useMemo(() => (option.plugins ?? []) as readonly [...P], [option.plugins]);
 
@@ -28,13 +30,13 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
 
   /** Array of `{ key: string; transformer: (data: T[]) => T[]; }` */
   const transformer = React.useMemo(
-    () => createTfChain(combinePlugins<T, P>(plugins, "transformer") as CombineTransformer<T, P>),
+    () => createTfChain(combinePlugins<T, P>(plugins, "transformer") as Transformer<T, P>),
     [plugins]
   );
 
   /** Calculate TF result */
   const calcTfResult = React.useCallback(
-    (key?: keyof CombineTransformer<T, P>) => {
+    (key?: keyof Transformer<T, P>) => {
       const from = Math.max(
         0,
         transformer.findIndex((i) => i.key === key)
@@ -57,7 +59,7 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
 
   /** Calculate TF result & update table and states. */
   const tf = React.useCallback(
-    (key?: keyof CombineTransformer<T, P>) => {
+    (key?: keyof Transformer<T, P>) => {
       const res = calcTfResult(key);
       setTable(res);
       setLatestTf(Date.now());
@@ -68,21 +70,22 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
   // State
 
   /** When the state changes:
-   * - The table is recalculated (starting from the specified point by the exporting plugin).
+   * - The table is recalculated (starting from the specified point by the exporting plugin.)
    * - The hook synchronizes all subscribed state information. (TODO: sync relevant states only)
    */
-  const state = React.useMemo(() => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const state = React.useMemo(() => combinePlugins<T, P>(plugins, "state") as State<T, P>, [plugins, tf, latestTf]);
+
+  const dispatch = React.useMemo(() => {
     return plugins.reduce(
-      (acc, plugin) => ({ ...acc, ...wrapPluginState<T, P>(plugin.exports.state, tf) }),
-      {} as CombineState<T, P>
-    );
+      (acc, plugin) => ({ ...acc, ...wrapPluginDispatch<T, P>(plugin.exports.dispatch, tf) }),
+      {}
+    ) as Dispatch<T, P>;
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [plugins, tf, latestTf]);
 
-  // Func & Misc
-
-  const func = React.useMemo(() => combinePlugins<T, P>(plugins, "func") as CombineFunc<T, P>, [plugins]);
-  const misc = React.useMemo(() => combinePlugins<T, P>(plugins, "misc") as CombineMisc<T, P>, [plugins]);
+  // Misc
+  const misc = React.useMemo(() => combinePlugins<T, P>(plugins, "misc") as Misc<T, P>, [plugins]);
 
   // Table
 
@@ -91,21 +94,21 @@ export function useTable<T extends TShape, P extends readonly Plugin<T>[]>(optio
 
   // Return
 
-  return { state, func, misc, tf, table };
+  return { state, dispatch, misc, tf, table };
 }
 
 // Helpers
 
 function combinePlugins<T extends TShape, P extends readonly Plugin<T>[]>(
   plugins: readonly [...P],
-  key: "transformer" | "func" | "misc"
-): CombinePlugin<T, P>[typeof key] {
-  return plugins.reduce((acc, plugin) => ({ ...acc, ...plugin.exports[key] }), {} as CombinePlugin<T, P>[typeof key]);
+  key: "state" | "transformer" | "misc"
+): CombinedPlugins<T, P>[typeof key] {
+  return plugins.reduce((acc, plugin) => ({ ...acc, ...plugin.exports[key] }), {}) as CombinedPlugins<T, P>[typeof key];
 }
 
 function createTfChain<T extends TShape, P extends readonly Plugin<T>[]>(
-  transformer: CombineTransformer<T, P>
-): { key: string; fn: Transformer<T>["fn"] }[] {
+  transformer: Transformer<T, P>
+): { key: string; fn: PluginTransformer<T>["fn"] }[] {
   const temp = Object.entries(transformer).map(([key, { fn, priority = Infinity }], index) => ({
     key,
     fn,
@@ -118,29 +121,26 @@ function createTfChain<T extends TShape, P extends readonly Plugin<T>[]>(
   return temp.map(({ key, fn }) => ({ key, fn }));
 }
 
-function wrapPluginState<T extends TShape, P extends readonly Plugin<T>[]>(
-  state: PluginState,
-  tf: (key?: keyof CombineTransformer<T, P>) => void
-) {
-  return Object.entries(state || {}).reduce((stateAcc, [key, s]) => {
-    stateAcc[key] = wrapState(tf, s);
-    return stateAcc;
-  }, {} as PluginState);
+function wrapPluginDispatch<T extends TShape, P extends readonly Plugin<T>[]>(
+  dispatch: PluginDispatches,
+  tf: (key?: keyof Transformer<T, P>) => void
+): Record<string, PluginDispatchFunction> {
+  return Object.entries(dispatch).reduce((acc, [key, dispatchFn]) => {
+    acc[key] = tfAttachedDispatch<T, P>(tf, dispatchFn);
+    return acc;
+  }, {} as Record<string, PluginDispatchFunction>);
 }
 
-function wrapState<T extends TShape, P extends readonly Plugin<T>[]>(
-  tf: (key?: keyof CombineTransformer<T, P>) => void,
-  state: PluginState[string]
-) {
-  const [value, dispatch, key] = state;
+function tfAttachedDispatch<T extends TShape, P extends readonly Plugin<T>[]>(
+  tf: (key?: keyof Transformer<T, P>) => void,
+  dispatchFn: PluginDispatch
+): (...args: [...Parameters<(typeof dispatchFn)[0]>]) => void {
+  const [func, key] = dispatchFn;
 
-  if (!key) return [value, dispatch] as const;
+  if (!key) return func;
 
-  return [
-    value,
-    (...args: [...Parameters<typeof dispatch>]): void => {
-      dispatch(...args);
-      tf(key);
-    },
-  ] as const;
+  return (...args: [...Parameters<typeof func>]): void => {
+    func(...args);
+    tf(key);
+  };
 }
